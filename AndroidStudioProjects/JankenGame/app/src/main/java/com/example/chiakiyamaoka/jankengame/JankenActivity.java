@@ -1,6 +1,7 @@
 package com.example.chiakiyamaoka.jankengame;
 
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -8,9 +9,10 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.Random;
 
-public class JankenActivity extends AppCompatActivity implements Runnable {
+public class JankenActivity extends AppCompatActivity {
 
     Button mSelectRockButton;
     Button mSelectScissorsButton;
@@ -29,13 +31,10 @@ public class JankenActivity extends AppCompatActivity implements Runnable {
     int mEnemyHandNum;
     int mCount = 0;
     long mStartTime;
-    long mLimitTime = 6L;
+    long mLimitTime = 45000l;
 
-    Thread thread = null;
     Handler handler = new Handler();
-    SimpleDateFormat mDataFormat = new SimpleDateFormat("ss.SS");
-    private long mPeriod = 10;
-    private boolean mStopRun = false;
+    Runnable updateTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +50,7 @@ public class JankenActivity extends AppCompatActivity implements Runnable {
         mCountText = (TextView) findViewById(R.id.count);
         mTimeText = (TextView) findViewById(R.id.time);
 
-        startTime();
+        startTimer();
         setEnemyHand();
 
         mSelectRockButton.setOnClickListener(onClickHand);
@@ -65,12 +64,6 @@ public class JankenActivity extends AppCompatActivity implements Runnable {
             }
         });
 
-    }
-
-    private void startTime() {
-        thread = new Thread(this);
-        thread.start();
-        mStartTime = System.currentTimeMillis();
     }
 
     private void setEnemyHand() {
@@ -107,28 +100,27 @@ public class JankenActivity extends AppCompatActivity implements Runnable {
         }
     }
 
-    @Override
-    public void run() {
+    public void startTimer() {
+        // startTimeの取得
+        mStartTime = SystemClock.elapsedRealtime(); // 起動してからの経過時間（ミリ秒）
 
-        while (!mStopRun) {
-            try {
-                Thread.sleep(mPeriod);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                mStopRun = true;
-            }
-
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    long endTime = System.currentTimeMillis();
-                    long elapseTime = (mLimitTime - endTime - mStartTime);
-                    /*if (elapseTime < 0L) {
-                        mStopRun = true;
-                    }*/
-                    mTimeText.setText("Time:" + mDataFormat.format(elapseTime));
+        // 一定時間ごとに現在の経過時間を表示
+        // Handler -> Runnable(処理) -> UI
+        updateTimer = new Runnable() {
+            @Override
+            public void run() {
+                long diff =SystemClock.elapsedRealtime() - mStartTime;
+                long t = mLimitTime - diff; // ミリ秒
+                SimpleDateFormat sdf = new SimpleDateFormat("ss.SS", Locale.US);
+                mTimeText.setText("Time:" + sdf.format(t));
+                handler.removeCallbacks(updateTimer);
+                handler.postDelayed(updateTimer, 10);
+                if (diff >= 44990l){
+                    handler.removeCallbacks(updateTimer);
                 }
-            });
-        }
+            }
+        };
+        handler.postDelayed(updateTimer, 10);
     }
+
 }
