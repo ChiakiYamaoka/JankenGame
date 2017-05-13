@@ -1,5 +1,6 @@
 package com.example.chiakiyamaoka.jankengame;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
@@ -117,6 +118,10 @@ public class JankenActivity extends AppCompatActivity {
                 handler.postDelayed(updateTimer, 10);
                 if (diff >= 44990l){
                     handler.removeCallbacks(updateTimer);
+                    Intent intent = new Intent(JankenActivity.this, ResultActivity.class);
+                    intent.putExtra("COUNT", mCount);
+                    startActivity(intent);
+                    finish();
                 }
             }
         };
