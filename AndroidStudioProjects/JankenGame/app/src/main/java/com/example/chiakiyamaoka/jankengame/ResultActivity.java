@@ -26,7 +26,7 @@ public class ResultActivity extends AppCompatActivity {
         mCloseButton = (Button) findViewById(R.id.close_button);
         mResultText = (TextView) findViewById(R.id.result_text);
 
-        mResultText.setText(String.valueOf(mCount) + "勝");
+        mResultText.setText(String.valueOf(mCount) + "勝中");
 
         mRetryButton.setOnClickListener(new View.OnClickListener() {
             @Override
